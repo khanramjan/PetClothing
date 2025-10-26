@@ -1,0 +1,36 @@
+# .NET Core Backend
+[Bb]in/
+[Oo]bj/
+[Ll]ogs/
+*.user
+*.suo
+*.log
+.vs/
+*.db
+*.db-shm
+*.db-wal
+
+# Entity Framework
+Migrations/
+
+# React Frontend
+node_modules/
+dist/
+.env.local
+.env.production
+.cache/
+build/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Uploads
+wwwroot/uploads/
+uploads/
