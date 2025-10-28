@@ -69,3 +69,57 @@ public interface IDashboardService
 {
     Task<DashboardStatsDTO> GetDashboardStatsAsync();
 }
+
+public interface IPaymentService
+{
+    Task<PaymentIntentResponse> CreatePaymentIntentAsync(int userId, CreatePaymentIntentRequest request);
+    Task<PaymentConfirmationResponse> ConfirmPaymentAsync(int userId, ConfirmPaymentRequest request);
+    Task<bool> HandleStripeWebhookAsync(string json, string signature);
+    Task<RefundResponse> RefundPaymentAsync(int userId, RefundRequest request);
+    Task<PaymentHistoryDTO?> GetPaymentAsync(int paymentId);
+    Task<List<PaymentHistoryDTO>> GetUserPaymentHistoryAsync(int userId);
+}
+
+public interface ICouponService
+{
+    Task<CouponDTO> CreateCouponAsync(CreateCouponRequest request);
+    Task<CouponDTO?> GetCouponByCodeAsync(string code);
+    Task<CouponDTO?> GetCouponByIdAsync(int id);
+    Task<List<CouponDTO>> GetAllCouponsAsync();
+    Task<List<CouponDTO>> GetActiveCouponsAsync();
+    Task<CouponDTO> UpdateCouponAsync(int id, CreateCouponRequest request);
+    Task<bool> DeleteCouponAsync(int id);
+    Task<ValidateCouponResponse> ValidateCouponAsync(ValidateCouponRequest request);
+    Task<ValidateCouponResponse> ApplyCouponAsync(int userId, string couponCode, decimal orderSubtotal, List<int> productIds);
+    Task<bool> RecordCouponUsageAsync(int couponId, int userId, int? orderId, decimal discountAmount);
+}
+
+public interface ICheckoutService
+{
+    Task<CheckoutSummaryDTO> GetCheckoutSummaryAsync(int userId);
+    Task<OrderConfirmationDTO> CreateOrderAsync(int userId, CreateOrderFromCheckoutRequest request);
+    Task<TaxCalculationDTO> CalculateTaxAsync(string stateCode, decimal subtotal);
+    Task<ShippingCalculationDTO> CalculateShippingAsync(int shippingMethodId, string stateCode, decimal weight = 5m);
+    Task<List<ShippingMethodDTO>> GetAvailableShippingMethodsAsync();
+    Task<List<TaxRateDTO>> GetTaxRatesAsync();
+}
+
+public interface IShippingService
+{
+    Task<List<ShippingMethodDTO>> GetShippingMethodsAsync();
+    Task<ShippingMethodDTO?> GetShippingMethodByIdAsync(int id);
+    Task<ShippingMethodDTO> CreateShippingMethodAsync(ShippingMethodDTO request);
+    Task<ShippingMethodDTO> UpdateShippingMethodAsync(int id, ShippingMethodDTO request);
+    Task<bool> DeleteShippingMethodAsync(int id);
+    Task<ShippingCalculationDTO> CalculateShippingCostAsync(int shippingMethodId, decimal weight, string stateCode);
+}
+
+public interface ITaxService
+{
+    Task<List<TaxRateDTO>> GetTaxRatesAsync();
+    Task<TaxRateDTO?> GetTaxRateByStateAsync(string stateCode);
+    Task<TaxRateDTO> CreateTaxRateAsync(TaxRateDTO request);
+    Task<TaxRateDTO> UpdateTaxRateAsync(int id, TaxRateDTO request);
+    Task<bool> DeleteTaxRateAsync(int id);
+    Task<TaxCalculationDTO> CalculateTaxAsync(string stateCode, decimal subtotal);
+}

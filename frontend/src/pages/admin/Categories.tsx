@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { FaPlus, FaEdit, FaTrash, FaImage } from 'react-icons/fa';
+import { FaPlus, FaEdit, FaTrash } from 'react-icons/fa';
 import api from '@/lib/api';
 import { toast } from 'react-toastify';
 

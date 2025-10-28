@@ -187,6 +187,19 @@ public class CartRepository : Repository<Cart>, ICartRepository
                     .ThenInclude(p => p.Images)
             .FirstOrDefaultAsync(c => c.UserId == userId);
     }
+
+    public async Task ClearCartAsync(int cartId)
+    {
+        var cart = await _dbSet
+            .Include(c => c.CartItems)
+            .FirstOrDefaultAsync(c => c.Id == cartId);
+
+        if (cart != null)
+        {
+            cart.CartItems.Clear();
+            _context.SaveChanges();
+        }
+    }
 }
 
 public class OrderRepository : Repository<Order>, IOrderRepository
@@ -284,6 +297,24 @@ public class AddressRepository : Repository<Address>, IAddressRepository
             .Where(a => a.UserId == userId)
             .OrderByDescending(a => a.IsDefault)
             .ThenByDescending(a => a.CreatedAt)
+            .ToListAsync();
+    }
+}
+
+public class PaymentRepository : Repository<Payment>, IPaymentRepository
+{
+    public PaymentRepository(ApplicationDbContext context) : base(context) { }
+
+    public async Task<Payment?> GetByPaymentIntentIdAsync(string paymentIntentId)
+    {
+        return await _dbSet.FirstOrDefaultAsync(p => p.PaymentIntentId == paymentIntentId);
+    }
+
+    public async Task<List<Payment>> GetOrderPaymentsAsync(int orderId)
+    {
+        return await _dbSet
+            .Where(p => p.OrderId == orderId)
+            .OrderByDescending(p => p.CreatedAt)
             .ToListAsync();
     }
 }

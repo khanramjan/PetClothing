@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-import { Product } from '@/types';
+import { Product, ProductImage } from '@/types';
 import api from '@/lib/api';
 import { toast } from 'react-toastify';
 
@@ -15,9 +15,36 @@ const Home = () => {
   const fetchFeaturedProducts = async () => {
     try {
       const response = await api.get('/products/featured?count=8');
-      setFeaturedProducts(response.data.data);
+      console.log('Featured products response:', response.data);
+      
+      // Transform API response to match Product type (handle both PascalCase and camelCase)
+      const products = (response.data.data || response.data || []).map((p: Record<string, unknown>) => ({
+        id: (p.id || p.Id) as number,
+        name: (p.name || p.Name) as string,
+        description: (p.description || p.Description) as string,
+        price: (p.price || p.Price) as number,
+        discountPrice: (p.discountPrice || p.DiscountPrice) as number | undefined,
+        sku: (p.sku || p.SKU) as string,
+        stockQuantity: (p.stockQuantity || p.StockQuantity) as number,
+        categoryId: (p.categoryId || p.CategoryId) as number,
+        categoryName: (p.categoryName || p.CategoryName) as string,
+        petType: (p.petType || p.PetType) as string,
+        size: (p.size || p.Size) as string,
+        color: (p.color || p.Color) as string,
+        material: (p.material || p.Material) as string,
+        isActive: (p.isActive || p.IsActive) as boolean,
+        isFeatured: (p.isFeatured || p.IsFeatured) as boolean,
+        rating: ((p.rating || p.Rating) as number) || 0,
+        reviewCount: ((p.reviewCount || p.ReviewCount) as number) || 0,
+        images: (p.images || p.Images || []) as ProductImage[],
+        createdAt: (p.createdAt || p.CreatedAt) as string,
+      }));
+      
+      setFeaturedProducts(products);
     } catch (error) {
+      console.error('Error fetching featured products:', error);
       toast.error('Failed to load featured products');
+      setFeaturedProducts([]);
     } finally {
       setLoading(false);
     }
@@ -78,7 +105,7 @@ const Home = () => {
             <div className="text-center py-12">
               <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
             </div>
-          ) : (
+          ) : featuredProducts && featuredProducts.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
               {featuredProducts.map((product) => (
                 <Link
@@ -88,7 +115,7 @@ const Home = () => {
                 >
                   <div className="aspect-square bg-gray-200 rounded-lg mb-4 overflow-hidden">
                     <img
-                      src={product.images[0]?.imageUrl || '/placeholder.jpg'}
+                      src={product.images?.length > 0 ? product.images[0].imageUrl : '/placeholder.jpg'}
                       alt={product.name}
                       className="w-full h-full object-cover group-hover:scale-110 transition duration-300"
                       onError={(e) => {
@@ -120,6 +147,10 @@ const Home = () => {
                   </div>
                 </Link>
               ))}
+            </div>
+          ) : (
+            <div className="text-center py-12">
+              <p className="text-gray-600">No featured products available</p>
             </div>
           )}
         </div>

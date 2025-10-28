@@ -1,5 +1,7 @@
 namespace PetClothingShop.Core.DTOs;
 
+using System.Text.Json.Serialization;
+
 public class CartDTO
 {
     public int Id { get; set; }
@@ -22,12 +24,18 @@ public class CartItemDTO
 
 public class AddToCartRequest
 {
+    [JsonPropertyName("productId")]
     public int ProductId { get; set; }
+    
+    [JsonPropertyName("quantity")]
     public int Quantity { get; set; } = 1;
 }
 
 public class UpdateCartItemRequest
 {
+    [JsonPropertyName("cartItemId")]
     public int CartItemId { get; set; }
+    
+    [JsonPropertyName("quantity")]
     public int Quantity { get; set; }
 }

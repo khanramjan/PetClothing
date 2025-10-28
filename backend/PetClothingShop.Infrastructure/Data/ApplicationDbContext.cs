@@ -20,6 +20,11 @@ public class ApplicationDbContext : DbContext
     public DbSet<OrderItem> OrderItems { get; set; }
     public DbSet<Address> Addresses { get; set; }
     public DbSet<Review> Reviews { get; set; }
+    public DbSet<Payment> Payments { get; set; }
+    public DbSet<Coupon> Coupons { get; set; }
+    public DbSet<CouponUsage> CouponUsages { get; set; }
+    public DbSet<ShippingMethod> ShippingMethods { get; set; }
+    public DbSet<TaxRate> TaxRates { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

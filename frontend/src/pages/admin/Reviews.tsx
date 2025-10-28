@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { FaStar, FaCheck, FaTimes, FaTrash } from 'react-icons/fa';
 import api from '@/lib/api';
 import { toast } from 'react-toastify';

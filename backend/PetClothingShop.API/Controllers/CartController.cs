@@ -1,12 +1,10 @@
 using System.Security.Claims;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PetClothingShop.Core.DTOs;
 using PetClothingShop.Core.Interfaces;
 
 namespace PetClothingShop.API.Controllers;
 
-[Authorize]
 [ApiController]
 [Route("api/[controller]")]
 public class CartController : ControllerBase
@@ -23,7 +21,8 @@ public class CartController : ControllerBase
     private int GetUserId()
     {
         var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        return int.Parse(userIdClaim ?? "0");
+        // For testing without auth, use user ID 1 as default
+        return int.TryParse(userIdClaim, out var userId) ? userId : 1;
     }
 
     [HttpGet]

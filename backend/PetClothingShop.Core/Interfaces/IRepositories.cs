@@ -39,6 +39,7 @@ public interface ICartRepository : IRepository<Cart>
 {
     Task<Cart?> GetByUserIdAsync(int userId);
     Task<Cart?> GetCartWithItemsAsync(int userId);
+    Task ClearCartAsync(int cartId);
 }
 
 public interface IOrderRepository : IRepository<Order>
@@ -64,3 +65,33 @@ public interface IAddressRepository : IRepository<Address>
 {
     Task<List<Address>> GetUserAddressesAsync(int userId);
 }
+
+public interface ICouponRepository : IRepository<Coupon>
+{
+    Task<Coupon?> GetByCodeAsync(string code);
+    Task<List<Coupon>> GetActiveCouponsAsync();
+    Task<Coupon?> GetByCodeWithUsageAsync(string code, int userId);
+    Task RecordCouponUsageAsync(CouponUsage usage);
+    Task<int> GetCouponUsageCountAsync(int couponId);
+    Task<int> GetCouponUsageCountByUserAsync(int couponId, int userId);
+}
+
+public interface IShippingMethodRepository : IRepository<ShippingMethod>
+{
+    Task<List<ShippingMethod>> GetActiveShippingMethodsAsync();
+    Task<ShippingMethod?> GetByNameAsync(string name);
+}
+
+public interface ITaxRateRepository : IRepository<TaxRate>
+{
+    Task<TaxRate?> GetByStateCodeAsync(string stateCode);
+    Task<List<TaxRate>> GetActiveRatesAsync();
+}
+
+public interface IPaymentRepository : IRepository<Payment>
+{
+    Task<Payment?> GetByPaymentIntentIdAsync(string paymentIntentId);
+    Task<List<Payment>> GetOrderPaymentsAsync(int orderId);
+}
+
+
