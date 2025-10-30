@@ -58,6 +58,9 @@ public interface IReviewService
 
 public interface IUserService
 {
+    Task<UserProfileDTO> GetUserProfileAsync(int userId);
+    Task<UserProfileDTO> UpdateUserProfileAsync(int userId, UpdateProfileRequest request);
+    Task<bool> ChangePasswordAsync(int userId, ChangePasswordRequest request);
     Task<List<AddressDTO>> GetUserAddressesAsync(int userId);
     Task<AddressDTO> AddAddressAsync(int userId, CreateAddressRequest request);
     Task<AddressDTO> UpdateAddressAsync(int userId, int addressId, CreateAddressRequest request);

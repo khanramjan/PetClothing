@@ -66,17 +66,23 @@ const Profile: React.FC = () => {
       }
 
       // Fetch user profile
-      const userResponse = await axios.get('http://localhost:5000/api/auth/me', {
+      const userResponse = await axios.get('http://localhost:5000/api/user/profile', {
         headers: { Authorization: `Bearer ${token}` }
       });
 
       if (userResponse.data.success) {
         const userData = userResponse.data.data;
-        setUser(userData);
+        setUser({
+          id: userData.id,
+          email: userData.email,
+          fullName: `${userData.firstName} ${userData.lastName}`,
+          phone: userData.phoneNumber || '',
+          role: userData.role
+        });
         setProfileForm({
-          fullName: userData.fullName || '',
-          phone: userData.phone || '',
-          email: userData.email || ''
+          fullName: `${userData.firstName} ${userData.lastName}`,
+          phone: userData.phoneNumber || '',
+          email: userData.email
         });
       }
 
@@ -94,14 +100,29 @@ const Profile: React.FC = () => {
     e.preventDefault();
     try {
       const token = localStorage.getItem('accessToken') || localStorage.getItem('token');
+      const names = profileForm.fullName.trim().split(' ');
+      const firstName = names[0] || '';
+      const lastName = names.slice(1).join(' ') || '';
+      
       const response = await axios.put(
-        'http://localhost:5000/api/auth/profile',
-        profileForm,
+        'http://localhost:5000/api/user/profile',
+        {
+          firstName,
+          lastName,
+          phoneNumber: profileForm.phone
+        },
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
       if (response.data.success) {
-        setUser({ ...user!, ...profileForm });
+        const userData = response.data.data;
+        setUser({
+          id: userData.id,
+          email: userData.email,
+          fullName: `${userData.firstName} ${userData.lastName}`,
+          phone: userData.phoneNumber || '',
+          role: userData.role
+        });
         setIsEditing(false);
         alert('Profile updated successfully!');
       }
@@ -119,8 +140,8 @@ const Profile: React.FC = () => {
 
     try {
       const token = localStorage.getItem('accessToken') || localStorage.getItem('token');
-      await axios.put(
-        'http://localhost:5000/api/auth/change-password',
+      await axios.post(
+        'http://localhost:5000/api/user/change-password',
         {
           currentPassword: passwordForm.currentPassword,
           newPassword: passwordForm.newPassword
@@ -130,8 +151,8 @@ const Profile: React.FC = () => {
 
       alert('Password changed successfully!');
       setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
-    } catch (err) {
-      alert('Failed to change password');
+    } catch (err: any) {
+      alert(err.response?.data?.message || 'Failed to change password');
     }
   };
 

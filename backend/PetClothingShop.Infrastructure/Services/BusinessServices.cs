@@ -305,10 +305,81 @@ public class CategoryService : ICategoryService
 public class UserService : IUserService
 {
     private readonly IAddressRepository _addressRepository;
+    private readonly IUserRepository _userRepository;
 
-    public UserService(IAddressRepository addressRepository)
+    public UserService(IAddressRepository addressRepository, IUserRepository userRepository)
     {
         _addressRepository = addressRepository;
+        _userRepository = userRepository;
+    }
+
+    public async Task<UserProfileDTO> GetUserProfileAsync(int userId)
+    {
+        var user = await _userRepository.GetByIdAsync(userId);
+        if (user == null)
+        {
+            throw new InvalidOperationException("User not found");
+        }
+
+        return new UserProfileDTO
+        {
+            Id = user.Id,
+            Email = user.Email,
+            FirstName = user.FirstName,
+            LastName = user.LastName,
+            PhoneNumber = user.PhoneNumber,
+            Role = user.Role,
+            CreatedAt = user.CreatedAt,
+            LastLoginAt = user.LastLoginAt
+        };
+    }
+
+    public async Task<UserProfileDTO> UpdateUserProfileAsync(int userId, UpdateProfileRequest request)
+    {
+        var user = await _userRepository.GetByIdAsync(userId);
+        if (user == null)
+        {
+            throw new InvalidOperationException("User not found");
+        }
+
+        user.FirstName = request.FirstName;
+        user.LastName = request.LastName;
+        user.PhoneNumber = request.PhoneNumber;
+
+        await _userRepository.UpdateAsync(user);
+
+        return new UserProfileDTO
+        {
+            Id = user.Id,
+            Email = user.Email,
+            FirstName = user.FirstName,
+            LastName = user.LastName,
+            PhoneNumber = user.PhoneNumber,
+            Role = user.Role,
+            CreatedAt = user.CreatedAt,
+            LastLoginAt = user.LastLoginAt
+        };
+    }
+
+    public async Task<bool> ChangePasswordAsync(int userId, ChangePasswordRequest request)
+    {
+        var user = await _userRepository.GetByIdAsync(userId);
+        if (user == null)
+        {
+            throw new InvalidOperationException("User not found");
+        }
+
+        // Verify current password
+        if (!BCrypt.Net.BCrypt.Verify(request.CurrentPassword, user.PasswordHash))
+        {
+            throw new InvalidOperationException("Current password is incorrect");
+        }
+
+        // Hash and update new password
+        user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.NewPassword);
+        await _userRepository.UpdateAsync(user);
+
+        return true;
     }
 
     public async Task<List<AddressDTO>> GetUserAddressesAsync(int userId)
