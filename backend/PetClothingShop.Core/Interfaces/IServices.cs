@@ -78,6 +78,10 @@ public interface IPaymentService
     Task<RefundResponse> RefundPaymentAsync(int userId, RefundRequest request);
     Task<PaymentHistoryDTO?> GetPaymentAsync(int paymentId);
     Task<List<PaymentHistoryDTO>> GetUserPaymentHistoryAsync(int userId);
+    Task<InitiatePaymentResponse> InitiateSSLCommerzPaymentAsync(InitiatePaymentRequest request, int userId);
+    Task<bool> ValidateSSLCommerzPaymentAsync(SSLCommerzValidationRequest request);
+    Task HandleSSLCommerzFailureAsync(SSLCommerzValidationRequest request);
+    Task HandleSSLCommerzCancellationAsync(SSLCommerzValidationRequest request);
 }
 
 public interface ICouponService

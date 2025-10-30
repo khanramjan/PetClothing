@@ -26,19 +26,25 @@ export const useAuthStore = create<AuthState>()(
         const response = await api.post('/auth/login', { email, password });
         const { data } = response.data;
         
-        localStorage.setItem('accessToken', data.accessToken);
-        localStorage.setItem('refreshToken', data.refreshToken);
+        // Handle both camelCase and PascalCase from backend
+        const accessToken = data.accessToken || data.AccessToken;
+        const refreshToken = data.refreshToken || data.RefreshToken;
+        
+        localStorage.setItem('accessToken', accessToken);
+        localStorage.setItem('refreshToken', refreshToken);
+        // Also set 'token' for backward compatibility
+        localStorage.setItem('token', accessToken);
         
         set({
           user: {
-            userId: data.userId,
-            email: data.email,
-            firstName: data.firstName,
-            lastName: data.lastName,
-            role: data.role,
+            userId: data.userId || data.UserId,
+            email: data.email || data.Email,
+            firstName: data.firstName || data.FirstName,
+            lastName: data.lastName || data.LastName,
+            role: data.role || data.Role,
           },
-          accessToken: data.accessToken,
-          refreshToken: data.refreshToken,
+          accessToken,
+          refreshToken,
           isAuthenticated: true,
         });
       },
@@ -47,19 +53,25 @@ export const useAuthStore = create<AuthState>()(
         const response = await api.post('/auth/register', data);
         const { data: authData } = response.data;
         
-        localStorage.setItem('accessToken', authData.accessToken);
-        localStorage.setItem('refreshToken', authData.refreshToken);
+        // Handle both camelCase and PascalCase from backend
+        const accessToken = authData.accessToken || authData.AccessToken;
+        const refreshToken = authData.refreshToken || authData.RefreshToken;
+        
+        localStorage.setItem('accessToken', accessToken);
+        localStorage.setItem('refreshToken', refreshToken);
+        // Also set 'token' for backward compatibility
+        localStorage.setItem('token', accessToken);
         
         set({
           user: {
-            userId: authData.userId,
-            email: authData.email,
-            firstName: authData.firstName,
-            lastName: authData.lastName,
-            role: authData.role,
+            userId: authData.userId || authData.UserId,
+            email: authData.email || authData.Email,
+            firstName: authData.firstName || authData.FirstName,
+            lastName: authData.lastName || authData.LastName,
+            role: authData.role || authData.Role,
           },
-          accessToken: authData.accessToken,
-          refreshToken: authData.refreshToken,
+          accessToken,
+          refreshToken,
           isAuthenticated: true,
         });
       },
@@ -67,6 +79,7 @@ export const useAuthStore = create<AuthState>()(
       logout: () => {
         localStorage.removeItem('accessToken');
         localStorage.removeItem('refreshToken');
+        localStorage.removeItem('token');
         set({
           user: null,
           accessToken: null,
@@ -98,6 +111,8 @@ export const useAuthStore = create<AuthState>()(
       partialize: (state) => ({
         user: state.user,
         isAuthenticated: state.isAuthenticated,
+        accessToken: state.accessToken,
+        refreshToken: state.refreshToken,
       }),
     }
   )

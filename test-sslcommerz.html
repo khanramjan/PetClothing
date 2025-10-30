@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SSLCommerz Payment Test</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 500px;
+            width: 100%;
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        
+        .subtitle {
+            color: #666;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            color: #333;
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+        
+        input, select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+        
+        input:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        button {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-top: 10px;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .status {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            display: none;
+            font-size: 14px;
+        }
+        
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+            display: block;
+        }
+        
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            display: block;
+        }
+        
+        .status.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+            display: block;
+        }
+        
+        .test-cards {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            font-size: 12px;
+        }
+        
+        .test-cards h3 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+        
+        .test-cards p {
+            margin: 5px 0;
+            color: #666;
+        }
+        
+        .test-cards code {
+            background: #e9ecef;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            background: #667eea;
+            color: white;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🐾 SSLCommerz Payment Test</h1>
+        <p class="subtitle">Pet Clothing Shop - Sandbox Mode <span class="badge">TEST</span></p>
+        
+        <form id="paymentForm">
+            <div class="form-group">
+                <label for="amount">Amount (BDT)</label>
+                <input type="number" id="amount" name="amount" value="1000" min="10" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="customerName">Customer Name</label>
+                <input type="text" id="customerName" name="customerName" value="Test Customer" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="customerEmail">Email</label>
+                <input type="email" id="customerEmail" name="customerEmail" value="test@example.com" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="customerPhone">Phone</label>
+                <input type="tel" id="customerPhone" name="customerPhone" value="+8801711111111" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="customerCity">City</label>
+                <input type="text" id="customerCity" name="customerCity" value="Dhaka" required>
+            </div>
+            
+            <button type="submit" id="payButton">
+                🔒 Proceed to Payment
+            </button>
+        </form>
+        
+        <div id="status" class="status"></div>
+        
+        <div class="test-cards">
+            <h3>📋 Test Cards for Sandbox</h3>
+            <p><strong>Success:</strong> <code>4111 1111 1111 1111</code></p>
+            <p><strong>Failure:</strong> <code>4000 0000 0000 0002</code></p>
+            <p><strong>CVV:</strong> <code>123</code> | <strong>Expiry:</strong> Any future date</p>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'http://localhost:5000/api';
+        
+        document.getElementById('paymentForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const button = document.getElementById('payButton');
+            const status = document.getElementById('status');
+            
+            // Disable button
+            button.disabled = true;
+            button.textContent = '⏳ Processing...';
+            
+            // Show processing status
+            status.className = 'status info';
+            status.textContent = 'Initiating payment with SSLCommerz...';
+            
+            try {
+                const formData = {
+                    amount: parseFloat(document.getElementById('amount').value),
+                    currency: 'BDT',
+                    orderId: Math.floor(Math.random() * 10000).toString(),
+                    customerName: document.getElementById('customerName').value,
+                    customerEmail: document.getElementById('customerEmail').value,
+                    customerPhone: document.getElementById('customerPhone').value,
+                    customerCity: document.getElementById('customerCity').value,
+                    customerState: 'Dhaka',
+                    customerPostcode: '1000',
+                    customerCountry: 'Bangladesh',
+                    description: 'Pet Clothing Purchase - Test'
+                };
+                
+                console.log('Sending payment request:', formData);
+                
+                const response = await fetch(`${API_BASE_URL}/payments/initiate`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                const result = await response.json();
+                console.log('Payment response:', result);
+                
+                if (result.success && result.data.gatewayPageURL) {
+                    status.className = 'status success';
+                    status.textContent = '✅ Success! Redirecting to SSLCommerz payment gateway...';
+                    
+                    // Log the details
+                    console.log('Transaction ID:', result.data.transactionId);
+                    console.log('Gateway URL:', result.data.gatewayPageURL);
+                    
+                    // Redirect to payment gateway
+                    setTimeout(() => {
+                        window.location.href = result.data.gatewayPageURL;
+                    }, 1500);
+                } else {
+                    throw new Error(result.message || 'Payment initiation failed');
+                }
+            } catch (error) {
+                console.error('Payment error:', error);
+                status.className = 'status error';
+                status.textContent = `❌ Error: ${error.message}`;
+                
+                // Re-enable button
+                button.disabled = false;
+                button.textContent = '🔒 Proceed to Payment';
+            }
+        });
+        
+        // Check if we're on a callback page
+        const urlParams = new URLSearchParams(window.location.search);
+        const transaction = urlParams.get('transaction');
+        
+        if (transaction) {
+            const status = document.getElementById('status');
+            status.className = 'status success';
+            status.textContent = `✅ Transaction ID: ${transaction}`;
+        }
+    </script>
+</body>
+</html>

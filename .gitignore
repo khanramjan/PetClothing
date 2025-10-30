@@ -10,6 +10,12 @@
 *.db-shm
 *.db-wal
 
+# Secrets and Environment Variables
+.env
+.env.local
+launchSettings.json
+appsettings.local.json
+
 # Entity Framework
 Migrations/
 

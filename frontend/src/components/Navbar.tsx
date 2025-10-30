@@ -14,7 +14,7 @@ const Navbar = () => {
     if (isAuthenticated) {
       fetchCart();
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, fetchCart]);
 
   const handleLogout = () => {
     logout();
@@ -43,6 +43,16 @@ const Navbar = () => {
               Shop
             </Link>
             
+            {/* Cart Link - Always visible */}
+            <Link to="/cart" className="relative text-gray-700 hover:text-primary-600 transition">
+              <FiShoppingCart className="w-6 h-6" />
+              {cartItemCount > 0 && (
+                <span className="absolute -top-2 -right-2 bg-primary-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                  {cartItemCount}
+                </span>
+              )}
+            </Link>
+            
             {isAuthenticated ? (
               <>
                 <Link to="/orders" className="text-gray-700 hover:text-primary-600 transition">
@@ -53,14 +63,6 @@ const Navbar = () => {
                     Admin
                   </Link>
                 )}
-                <Link to="/cart" className="relative text-gray-700 hover:text-primary-600 transition">
-                  <FiShoppingCart className="w-6 h-6" />
-                  {cartItemCount > 0 && (
-                    <span className="absolute -top-2 -right-2 bg-primary-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                      {cartItemCount}
-                    </span>
-                  )}
-                </Link>
                 <div className="relative group">
                   <button className="flex items-center space-x-2 text-gray-700 hover:text-primary-600 transition">
                     <FiUser className="w-6 h-6" />
@@ -125,15 +127,15 @@ const Navbar = () => {
             >
               Shop
             </Link>
+            <Link
+              to="/cart"
+              className="block px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-md"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              Cart {cartItemCount > 0 && `(${cartItemCount})`}
+            </Link>
             {isAuthenticated ? (
               <>
-                <Link
-                  to="/cart"
-                  className="block px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-md"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  Cart {cartItemCount > 0 && `(${cartItemCount})`}
-                </Link>
                 <Link
                   to="/orders"
                   className="block px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-md"

@@ -6,7 +6,7 @@ namespace PetClothingShop.Core.Entities;
 public class Payment
 {
     public int Id { get; set; }
-    public int OrderId { get; set; }
+    public int? OrderId { get; set; }
     public int UserId { get; set; }
     public string PaymentIntentId { get; set; } = string.Empty; // Stripe Payment Intent ID
     public decimal Amount { get; set; }
@@ -28,6 +28,6 @@ public class Payment
     public string? RefundReason { get; set; }
 
     // Navigation Properties
-    public virtual Order Order { get; set; } = null!;
+    public virtual Order? Order { get; set; }
     public virtual User User { get; set; } = null!;
 }

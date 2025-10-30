@@ -5,6 +5,8 @@ import Products from './pages/Products';
 import ProductDetail from './pages/ProductDetail';
 import Cart from './pages/Cart';
 import Checkout from './pages/Checkout';
+import CheckoutSuccess from './pages/CheckoutSuccess';
+import CheckoutFailed from './pages/CheckoutFailed';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Profile from './pages/Profile';
@@ -28,6 +30,8 @@ function App() {
         <Route path="products/:id" element={<ProductDetail />} />
         <Route path="login" element={<Login />} />
         <Route path="register" element={<Register />} />
+        <Route path="checkout/success" element={<CheckoutSuccess />} />
+        <Route path="checkout/failed" element={<CheckoutFailed />} />
         
         {/* Protected Customer Routes */}
         <Route element={<ProtectedRoute />}>
