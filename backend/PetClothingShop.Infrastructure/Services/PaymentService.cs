@@ -596,26 +596,23 @@ public class PaymentService : IPaymentService
                 var payments = await _paymentRepository.GetAllAsync();
                 var existingPayment = payments.FirstOrDefault(p => p.PaymentIntentId == request.TransactionId);
 
-                if (existingPayment != null)
+                if (existingPayment != null && existingPayment.OrderId.HasValue && existingPayment.OrderId.Value > 0)
                 {
-                    // Update existing payment
+                    // Existing payment with order - just update payment status
                     existingPayment.Status = "succeeded";
                     existingPayment.ProcessedAt = DateTime.UtcNow;
                     existingPayment.PaymentMethodDetails = validationResult;
 
                     // Update order status
-                    if (existingPayment.OrderId.HasValue && existingPayment.OrderId.Value > 0)
+                    var order = await _orderRepository.GetByIdAsync(existingPayment.OrderId.Value);
+                    if (order != null)
                     {
-                        var order = await _orderRepository.GetByIdAsync(existingPayment.OrderId.Value);
-                        if (order != null)
-                        {
-                            order.PaymentStatus = "Paid";
-                            order.PaymentMethod = "sslcommerz";
-                            order.PaymentTransactionId = request.TransactionId;
-                            order.Status = "Processing";
-                            await _orderRepository.UpdateAsync(order);
-                            _logger.LogInformation($"Order {existingPayment.OrderId} marked as paid");
-                        }
+                        order.PaymentStatus = "Paid";
+                        order.PaymentMethod = "sslcommerz";
+                        order.PaymentTransactionId = request.TransactionId;
+                        order.Status = "Processing";
+                        await _orderRepository.UpdateAsync(order);
+                        _logger.LogInformation($"Order {existingPayment.OrderId} marked as paid");
                     }
 
                     await _paymentRepository.UpdateAsync(existingPayment);
@@ -623,35 +620,29 @@ public class PaymentService : IPaymentService
                 }
                 else
                 {
-                    // New payment - need to create order from user's cart
+                    // Pending payment without order - need to create order from user's cart
                     _logger.LogInformation($"Creating new order for validated transaction: {request.TransactionId}");
                     
-                    // Look up the pending payment record by transaction ID to get user ID
-                    var allPayments = await _paymentRepository.GetAllAsync();
-                    var pendingPayment = allPayments.FirstOrDefault(p => 
-                        p.PaymentIntentId == request.TransactionId && 
-                        p.Status == "pending");
-                    
-                    if (pendingPayment == null)
+                    // existingPayment should be the pending payment
+                    if (existingPayment == null)
                     {
-                        _logger.LogError($"Cannot create order - no pending payment found for transaction {request.TransactionId}");
+                        _logger.LogError($"Cannot create order - no payment found for transaction {request.TransactionId}");
                         return false;
                     }
 
                     // Get user from pending payment
                     var users = await _userRepository.GetAllAsync();
-                    var user = users.FirstOrDefault(u => u.Id == pendingPayment.UserId);
+                    var user = users.FirstOrDefault(u => u.Id == existingPayment.UserId);
                     if (user == null)
                     {
-                        _logger.LogError($"Cannot create order - user not found: {pendingPayment.UserId}");
+                        _logger.LogError($"Cannot create order - user not found: {existingPayment.UserId}");
                         return false;
                     }
                     
                     _logger.LogInformation($"Found user {user.Id} ({user.Email}) from pending payment");
 
-                    // Get user's cart
-                    var allCarts = await _cartRepository.GetAllAsync();
-                    var userCart = allCarts.FirstOrDefault(c => c.UserId == user.Id);
+                    // Get user's cart with items
+                    var userCart = await _cartRepository.GetCartWithItemsAsync(user.Id);
                     if (userCart == null)
                     {
                         _logger.LogError($"Cannot create order - cart not found for user {user.Id}");
@@ -738,14 +729,14 @@ public class PaymentService : IPaymentService
                     _logger.LogInformation($"Order {order.Id} created for user {user.Id}");
 
                     // Update the pending payment record
-                    pendingPayment.OrderId = order.Id;
-                    pendingPayment.Amount = order.Total;
-                    pendingPayment.Currency = request.currency_type ?? "BDT";
-                    pendingPayment.Status = "succeeded";
-                    pendingPayment.ProcessedAt = DateTime.UtcNow;
-                    pendingPayment.PaymentMethodDetails = validationResult;
+                    existingPayment.OrderId = order.Id;
+                    existingPayment.Amount = order.Total;
+                    existingPayment.Currency = request.currency_type ?? "BDT";
+                    existingPayment.Status = "succeeded";
+                    existingPayment.ProcessedAt = DateTime.UtcNow;
+                    existingPayment.PaymentMethodDetails = validationResult;
 
-                    await _paymentRepository.UpdateAsync(pendingPayment);
+                    await _paymentRepository.UpdateAsync(existingPayment);
                     _logger.LogInformation($"Payment record updated for order {order.Id}");
 
                     // Clear user's cart items

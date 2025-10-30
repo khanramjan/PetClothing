@@ -7,20 +7,34 @@ interface OrderItem {
   id: number;
   productId: number;
   productName: string;
+  productSKU: string;
+  productImage: string;
   quantity: number;
   price: number;
-  imageUrl?: string;
+  subtotal: number;
 }
 
 interface Order {
   id: number;
   orderNumber: string;
-  orderDate: string;
+  createdAt: string;
   status: string;
   paymentStatus: string;
-  totalAmount: number;
+  total: number;
+  subTotal: number;
+  shippingCost: number;
+  tax: number;
   items: OrderItem[];
-  shippingAddress: string;
+  shippingAddress: {
+    fullName: string;
+    phoneNumber: string;
+    addressLine1: string;
+    addressLine2?: string;
+    city: string;
+    state: string;
+    postalCode: string;
+    country: string;
+  };
   paymentMethod: string;
 }
 
@@ -144,11 +158,11 @@ const Orders: React.FC = () => {
                     </div>
                     <div className="text-right">
                       <p className="text-sm opacity-90">Order Date</p>
-                      <p className="font-semibold">{new Date(order.orderDate).toLocaleDateString()}</p>
+                      <p className="font-semibold">{new Date(order.createdAt).toLocaleDateString()}</p>
                     </div>
                     <div className="text-right">
                       <p className="text-sm opacity-90">Total Amount</p>
-                      <p className="text-2xl font-bold">${order.totalAmount.toFixed(2)}</p>
+                      <p className="text-2xl font-bold">${order.total.toFixed(2)}</p>
                     </div>
                   </div>
                 </div>
@@ -173,8 +187,8 @@ const Orders: React.FC = () => {
                     {order.items?.map((item, index) => (
                       <div key={index} className="flex items-center gap-4 p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors">
                         <div className="w-20 h-20 bg-white rounded-lg flex items-center justify-center overflow-hidden">
-                          {item.imageUrl ? (
-                            <img src={item.imageUrl} alt={item.productName} className="w-full h-full object-cover" />
+                          {item.productImage ? (
+                            <img src={item.productImage} alt={item.productName} className="w-full h-full object-cover" />
                           ) : (
                             <svg className="w-10 h-10 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
                               <path fillRule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clipRule="evenodd" />
@@ -183,10 +197,10 @@ const Orders: React.FC = () => {
                         </div>
                         <div className="flex-1">
                           <h4 className="font-semibold text-gray-900">{item.productName}</h4>
-                          <p className="text-sm text-gray-600">Quantity: {item.quantity}</p>
+                          <p className="text-sm text-gray-600">SKU: {item.productSKU} • Qty: {item.quantity}</p>
                         </div>
                         <div className="text-right">
-                          <p className="font-bold text-gray-900">${(item.price * item.quantity).toFixed(2)}</p>
+                          <p className="font-bold text-gray-900">${item.subtotal.toFixed(2)}</p>
                           <p className="text-sm text-gray-600">${item.price.toFixed(2)} each</p>
                         </div>
                       </div>
@@ -203,7 +217,14 @@ const Orders: React.FC = () => {
                         </svg>
                         <div>
                           <p className="text-sm font-semibold text-blue-900">Shipping Address</p>
-                          <p className="text-sm text-blue-700 mt-1">{order.shippingAddress}</p>
+                          <p className="text-sm text-blue-700 mt-1">
+                            {order.shippingAddress.fullName}<br />
+                            {order.shippingAddress.addressLine1}
+                            {order.shippingAddress.addressLine2 && `, ${order.shippingAddress.addressLine2}`}<br />
+                            {order.shippingAddress.city}, {order.shippingAddress.state} {order.shippingAddress.postalCode}<br />
+                            {order.shippingAddress.country}<br />
+                            Phone: {order.shippingAddress.phoneNumber}
+                          </p>
                         </div>
                       </div>
                     </div>
