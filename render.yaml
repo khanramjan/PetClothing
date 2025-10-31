@@ -1,0 +1,42 @@
+services:
+  # Backend API Service
+  - type: web
+    name: pet-clothing-api
+    env: dotnet
+    region: singapore
+    plan: starter
+    buildCommand: |
+      cd backend/PetClothingShop.API
+      dotnet publish -c Release -o out
+    startCommand: |
+      cd backend/PetClothingShop.API/out
+      dotnet PetClothingShop.API.dll
+    envVars:
+      - key: ASPNETCORE_ENVIRONMENT
+        value: Production
+      - key: ASPNETCORE_URLS
+        value: http://0.0.0.0:$PORT
+      - key: ConnectionStrings__DefaultConnection
+        fromDatabase:
+          name: petshop-db
+          property: connectionString
+      - key: Jwt__Secret
+        sync: false
+      - key: Backend__BaseUrl
+        sync: false
+      - key: Frontend__Url
+        sync: false
+      - key: SSLCommerz__StoreId
+        sync: false
+      - key: SSLCommerz__StorePassword
+        sync: false
+      - key: SSLCommerz__IsProduction
+        value: true
+
+# PostgreSQL Database
+databases:
+  - name: petshop-db
+    databaseName: PetClothingShopDB
+    user: petshop_user
+    region: singapore
+    plan: starter
