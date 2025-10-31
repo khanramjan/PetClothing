@@ -2,7 +2,7 @@ using Npgsql;
 
 Console.WriteLine("=== Seeding Categories and Sample Data ===\n");
 
-var connectionString = "Host=mainline.proxy.rlwy.net;Port=47346;Database=railway;Username=postgres;Password=PmxjmOySjTjmuUvdSByxMsrmzwExlYli;SSL Mode=Prefer;Trust Server Certificate=true";
+var connectionString = "Host=db.sdhpxjpbbevqhgiwtltz.supabase.co;Port=5432;Database=postgres;Username=postgres;Password=@Rramjan_kh08;SSL Mode=Require;Trust Server Certificate=true";
 
 try
 {

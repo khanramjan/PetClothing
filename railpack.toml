@@ -1,0 +1,12 @@
+[build]
+builder = "dockerfile"
+dockerfile_path = "backend/PetClothingShop.API/Dockerfile"
+
+[deploy]
+start_command = "dotnet PetClothingShop.API.dll"
+healthcheck_path = "/api/products"
+healthcheck_timeout = 300
+
+[services]
+internal_port = 80
+protocol = "http"

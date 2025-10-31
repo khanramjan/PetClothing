@@ -13,6 +13,8 @@
 # Secrets and Environment Variables
 .env
 .env.local
+.env.production
+.env.development
 launchSettings.json
 appsettings.local.json
 appsettings.Production.json
@@ -30,7 +32,7 @@ Migrations/
 node_modules/
 dist/
 .env.local
-.env.production
+.env.production.local
 .cache/
 build/
 

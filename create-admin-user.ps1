@@ -1,16 +1,23 @@
-# Create Admin User in Railway Database
+# Create Admin User in database
 Write-Host ""
 Write-Host "================================================" -ForegroundColor Cyan
-Write-Host " Creating Admin User in Railway PostgreSQL     " -ForegroundColor Cyan
+Write-Host " Creating Admin User in PostgreSQL Database   " -ForegroundColor Cyan
 Write-Host "================================================" -ForegroundColor Cyan
 Write-Host ""
 
-# Railway database connection details
-$PGHOST = "mainline.proxy.rlwy.net"
-$PGPORT = "47346"
-$PGDATABASE = "railway"
-$PGUSER = "postgres"
-$PGPASSWORD = "PmxjmOySjTjmuUvdSByxMsrmzwExlYli"
+# Prefer environment-configured connection. The script supports:
+# 1) DATABASE_URL (postgresql://user:pass@host:port/db)
+# 2) ConnectionStrings__DefaultConnection (Npgsql format)
+# 3) Individual PGHOST/PGPORT/PGDATABASE/PGUSER/PGPASSWORD environment variables
+
+# Read connection info from environment (do NOT put secrets in source code)
+$DATABASE_URL = $env:DATABASE_URL
+$NPG_CONN = $env:ConnectionStrings__DefaultConnection
+$PGHOST = $env:DATABASE_HOST
+$PGPORT = $env:DATABASE_PORT
+$PGDATABASE = $env:DATABASE_NAME
+$PGUSER = $env:DATABASE_USER
+$PGPASSWORD = $env:DATABASE_PASSWORD
 
 # Admin user details
 $adminEmail = "admin@petshop.com"
@@ -22,8 +29,8 @@ Write-Host "  Email:    $adminEmail" -ForegroundColor White
 Write-Host "  Password: $adminPassword" -ForegroundColor White
 Write-Host ""
 
-# Set environment variable for password
-$env:PGPASSWORD = $PGPASSWORD
+# Set environment variable for password (only if provided)
+if ($PGPASSWORD) { $env:PGPASSWORD = $PGPASSWORD }
 
 # SQL to insert admin user
 $sql = @"
@@ -49,7 +56,7 @@ INSERT INTO ""Users"" (
 ON CONFLICT (""Email"") DO NOTHING;
 "@
 
-Write-Host "Connecting to Railway PostgreSQL..." -ForegroundColor Yellow
+Write-Host "Connecting to PostgreSQL..." -ForegroundColor Yellow
 
 # Try to run using psql command
 try {
@@ -58,9 +65,21 @@ try {
     
     if ($psqlPath) {
         Write-Host "Running SQL to create admin user..." -ForegroundColor Yellow
-        
-        $result = echo $sql | psql -h $PGHOST -p $PGPORT -U $PGUSER -d $PGDATABASE 2>&1
-        
+
+        # Prefer DATABASE_URL or ConnectionStrings__DefaultConnection if available
+        if ($DATABASE_URL) {
+            # psql accepts a connection URI
+            $psqlCmd = @($DATABASE_URL, '-c', $sql)
+            $result = psql $psqlCmd 2>&1
+        } elseif ($NPG_CONN) {
+            # Try to use Npgsql connection string (psql accepts libpq style, so we'll try)
+            $psqlCmd = @($NPG_CONN, '-c', $sql)
+            $result = psql $psqlCmd 2>&1
+        } else {
+            # Fall back to individual parameters
+            $result = echo $sql | psql -h $PGHOST -p $PGPORT -U $PGUSER -d $PGDATABASE 2>&1
+        }
+
         if ($LASTEXITCODE -eq 0) {
             Write-Host ""
             Write-Host "================================================" -ForegroundColor Green
@@ -71,7 +90,7 @@ try {
             Write-Host "  Email:    $adminEmail" -ForegroundColor White
             Write-Host "  Password: $adminPassword" -ForegroundColor White
             Write-Host ""
-        } else {
+    } else {
             Write-Host ""
             Write-Host "================================================" -ForegroundColor Yellow
             Write-Host " Note: Admin user might already exist         " -ForegroundColor Yellow

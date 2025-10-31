@@ -2,13 +2,49 @@ using Npgsql;
 
 Console.WriteLine("=== Admin Role Updater ===\n");
 
-var connectionString = "Host=mainline.proxy.rlwy.net;Port=47346;Database=railway;Username=postgres;Password=PmxjmOySjTjmuUvdSByxMsrmzwExlYli;SSL Mode=Require;Trust Server Certificate=true";
+// Read connection string from environment to avoid hardcoding secrets in repo.
+// Supports either a full Npgsql-style connection string in
+// ConnectionStrings__DefaultConnection or a DATABASE_URL in the
+// postgres://user:pass@host:port/dbname format (common on Supabase/Railway).
+var connectionString = Environment.GetEnvironmentVariable("ConnectionStrings__DefaultConnection")
+                    ?? Environment.GetEnvironmentVariable("DATABASE_URL");
+
+if (string.IsNullOrWhiteSpace(connectionString))
+{
+    Console.WriteLine("✗ No database connection string found. Set ConnectionStrings__DefaultConnection or DATABASE_URL environment variable.");
+    return 1;
+}
+
+// If DATABASE_URL (URI) format is provided, convert to Npgsql connection string
+if (connectionString.StartsWith("postgres://", StringComparison.OrdinalIgnoreCase) ||
+    connectionString.StartsWith("postgresql://", StringComparison.OrdinalIgnoreCase))
+{
+    try
+    {
+        var uri = new Uri(connectionString);
+        var userInfo = uri.UserInfo.Split(':', 2);
+        var host = uri.Host;
+        var port = uri.IsDefaultPort ? 5432 : uri.Port;
+        var user = userInfo.Length > 0 ? userInfo[0] : string.Empty;
+        var pass = userInfo.Length > 1 ? userInfo[1] : string.Empty;
+        var db = uri.AbsolutePath.TrimStart('/');
+
+        // Build a plain Npgsql-compatible connection string. This avoids depending on
+        // NpgsqlConnectionStringBuilder at compile time and keeps the code simple.
+        connectionString = $"Host={host};Port={port};Database={db};Username={user};Password={pass};SSL Mode=Require;Trust Server Certificate=true";
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"✗ Failed to parse DATABASE_URL: {ex.Message}");
+        return 1;
+    }
+}
 
 try
 {
     using var connection = new NpgsqlConnection(connectionString);
     await connection.OpenAsync();
-    Console.WriteLine("✓ Connected to Railway database\n");
+    Console.WriteLine("✓ Connected to database\n");
 
     // First check if user exists
     var checkSql = @"SELECT ""Id"", ""Email"", ""Role"" FROM ""Users"" WHERE ""Email"" = @Email";

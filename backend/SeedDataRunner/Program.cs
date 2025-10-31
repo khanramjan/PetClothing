@@ -2,13 +2,23 @@ using Npgsql;
 
 Console.WriteLine("=== Seeding Categories and Sample Data ===\n");
 
-var connectionString = "Host=mainline.proxy.rlwy.net;Port=47346;Database=railway;Username=postgres;Password=PmxjmOySjTjmuUvdSByxMsrmzwExlYli;SSL Mode=Prefer;Trust Server Certificate=true";
+var connectionString = "Host=db.sdhpxjpbbevqhgiwtltz.supabase.co;Port=5432;Database=postgres;Username=postgres;Password=@Rramjan_kh08;SSL Mode=Require;Trust Server Certificate=true";
 
 try
 {
     using var connection = new NpgsqlConnection(connectionString);
     await connection.OpenAsync();
     Console.WriteLine("✓ Connected to Railway database\n");
+
+    // Insert Admin User
+    var adminSql = @"
+        INSERT INTO ""Users"" (""Email"", ""PasswordHash"", ""FirstName"", ""LastName"", ""Role"", ""IsActive"", ""CreatedAt"")
+        VALUES ('admin@petshop.com', '$2a$11$lXevRVHSfKZcBHT/egSXau/FnrzQ3wqzC9O.V4TyK3Yq8NN9aLAxe', 'Admin', 'User', 'Admin', true, NOW())
+        ON CONFLICT DO NOTHING;";
+
+    using var adminCmd = new NpgsqlCommand(adminSql, connection);
+    var adminAffected = await adminCmd.ExecuteNonQueryAsync();
+    Console.WriteLine($"✓ Inserted {adminAffected} admin user");
 
     // Insert Categories
     var categorySql = @"
