@@ -1,0 +1,6 @@
+services:
+  - type: web
+    name: pet-clothing-shop
+    region: oregon
+    plan: free
+    dockerfile: ./Dockerfile
