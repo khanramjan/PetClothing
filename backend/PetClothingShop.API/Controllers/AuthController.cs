@@ -73,4 +73,19 @@ public class AuthController : ControllerBase
             return StatusCode(500, new { success = false, message = "An error occurred while refreshing token" });
         }
     }
+
+    [HttpPost("sync-oauth-user")]
+    public async Task<IActionResult> SyncOAuthUser([FromBody] SyncOAuthUserRequest request)
+    {
+        try
+        {
+            var response = await _authService.SyncOAuthUserAsync(request);
+            return Ok(new { success = true, data = response });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error syncing OAuth user");
+            return StatusCode(500, new { success = false, message = "An error occurred while syncing user" });
+        }
+    }
 }

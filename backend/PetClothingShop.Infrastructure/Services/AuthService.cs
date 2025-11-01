@@ -147,4 +147,66 @@ public class AuthService : IAuthService
 
         return true;
     }
+
+    public async Task<AuthResponse> SyncOAuthUserAsync(SyncOAuthUserRequest request)
+    {
+        // Check if user already exists
+        var user = await _userRepository.GetByEmailAsync(request.Email);
+        
+        if (user == null)
+        {
+            // Create new user from OAuth data
+            user = new User
+            {
+                Email = request.Email,
+                PasswordHash = string.Empty, // OAuth users don't need a password
+                FirstName = request.FirstName ?? string.Empty,
+                LastName = request.LastName ?? string.Empty,
+                Role = "Customer",
+                IsActive = true,
+                CreatedAt = DateTime.UtcNow,
+                LastLoginAt = DateTime.UtcNow
+            };
+
+            await _userRepository.AddAsync(user);
+        }
+        else
+        {
+            // Update last login time for existing user
+            user.LastLoginAt = DateTime.UtcNow;
+            
+            // Update name if it's empty and OAuth provides it
+            if (string.IsNullOrEmpty(user.FirstName) && !string.IsNullOrEmpty(request.FirstName))
+            {
+                user.FirstName = request.FirstName;
+            }
+            if (string.IsNullOrEmpty(user.LastName) && !string.IsNullOrEmpty(request.LastName))
+            {
+                user.LastName = request.LastName;
+            }
+            
+            await _userRepository.UpdateAsync(user);
+        }
+
+        // Generate tokens for the synced user
+        var accessToken = _jwtService.GenerateAccessToken(user.Id, user.Email, user.Role);
+        var refreshToken = _jwtService.GenerateRefreshToken();
+
+        // Save refresh token
+        user.RefreshToken = refreshToken;
+        user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7);
+        await _userRepository.UpdateAsync(user);
+
+        return new AuthResponse
+        {
+            UserId = user.Id,
+            Email = user.Email,
+            FirstName = user.FirstName,
+            LastName = user.LastName,
+            Role = user.Role,
+            AccessToken = accessToken,
+            RefreshToken = refreshToken,
+            ExpiresAt = DateTime.UtcNow.AddMinutes(60)
+        };
+    }
 }

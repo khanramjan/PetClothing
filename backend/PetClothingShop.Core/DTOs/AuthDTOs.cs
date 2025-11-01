@@ -32,3 +32,12 @@ public class RefreshTokenRequest
     public string AccessToken { get; set; } = string.Empty;
     public string RefreshToken { get; set; } = string.Empty;
 }
+
+public class SyncOAuthUserRequest
+{
+    public string Email { get; set; } = string.Empty;
+    public string? FirstName { get; set; }
+    public string? LastName { get; set; }
+    public string Provider { get; set; } = "google";
+    public string ProviderUserId { get; set; } = string.Empty;
+}

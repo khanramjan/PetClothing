@@ -8,6 +8,7 @@ public interface IAuthService
     Task<AuthResponse> LoginAsync(LoginRequest request);
     Task<AuthResponse> RefreshTokenAsync(RefreshTokenRequest request);
     Task<bool> RevokeTokenAsync(int userId);
+    Task<AuthResponse> SyncOAuthUserAsync(SyncOAuthUserRequest request);
 }
 
 public interface IProductService
