@@ -1,7 +1,6 @@
 services:
   - type: web
     name: pet-clothing-shop
-    runtime: dotnet
     region: oregon
     plan: free
     buildCommand: cd backend/PetClothingShop.API && dotnet publish -c Release -o out
