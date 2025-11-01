@@ -25,10 +25,3 @@ services:
         sync: false
       - key: Supabase__Issuer
         sync: false
-
-databases:
-  - name: petshop-postgres
-    engine: postgres
-    version: "15"
-    region: oregon
-    plan: free
