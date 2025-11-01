@@ -1,42 +1,34 @@
 services:
-  # Backend API Service
   - type: web
-    name: pet-clothing-api
+    name: pet-clothing-shop
     env: dotnet
-    region: singapore
-    plan: starter
-    buildCommand: |
-      cd backend/PetClothingShop.API
-      dotnet publish -c Release -o out
-    startCommand: |
-      cd backend/PetClothingShop.API/out
-      dotnet PetClothingShop.API.dll
+    region: oregon
+    plan: free
+    buildCommand: cd backend/PetClothingShop.API && dotnet publish -c Release -o out
+    startCommand: cd backend/PetClothingShop.API/out && dotnet PetClothingShop.API.dll
     envVars:
       - key: ASPNETCORE_ENVIRONMENT
         value: Production
       - key: ASPNETCORE_URLS
-        value: http://0.0.0.0:$PORT
+        value: http://0.0.0.0:10000
       - key: ConnectionStrings__DefaultConnection
-        fromDatabase:
-          name: petshop-db
-          property: connectionString
+        sync: false
       - key: Jwt__Secret
         sync: false
-      - key: Backend__BaseUrl
+      - key: Jwt__Issuer
+        value: PetClothingShop
+      - key: Jwt__Audience
+        value: PetClothingShopClient
+      - key: Supabase__Url
         sync: false
-      - key: Frontend__Url
+      - key: Supabase__JwtSecret
         sync: false
-      - key: SSLCommerz__StoreId
+      - key: Supabase__Issuer
         sync: false
-      - key: SSLCommerz__StorePassword
-        sync: false
-      - key: SSLCommerz__IsProduction
-        value: true
 
-# PostgreSQL Database
 databases:
-  - name: petshop-db
-    databaseName: PetClothingShopDB
-    user: petshop_user
-    region: singapore
-    plan: starter
+  - name: petshop-postgres
+    engine: postgres
+    version: "15"
+    region: oregon
+    plan: free
