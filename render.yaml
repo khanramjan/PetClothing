@@ -3,8 +3,7 @@ services:
     name: pet-clothing-shop
     region: oregon
     plan: free
-    buildCommand: cd backend/PetClothingShop.API && dotnet publish -c Release -o out
-    startCommand: cd backend/PetClothingShop.API/out && dotnet PetClothingShop.API.dll
+    dockerfile: ./Dockerfile
     envVars:
       - key: ASPNETCORE_ENVIRONMENT
         value: Production
