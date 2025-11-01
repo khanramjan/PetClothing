@@ -66,7 +66,8 @@ const Profile: React.FC = () => {
       }
 
       // Fetch user profile
-      const userResponse = await axios.get('http://localhost:5000/api/user/profile', {
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+      const userResponse = await axios.get(`${apiUrl}/user/profile`, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
@@ -104,8 +105,9 @@ const Profile: React.FC = () => {
       const firstName = names[0] || '';
       const lastName = names.slice(1).join(' ') || '';
       
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
       const response = await axios.put(
-        'http://localhost:5000/api/user/profile',
+        `${apiUrl}/user/profile`,
         {
           firstName,
           lastName,
@@ -139,9 +141,10 @@ const Profile: React.FC = () => {
     }
 
     try {
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
       const token = localStorage.getItem('accessToken') || localStorage.getItem('token');
       await axios.post(
-        'http://localhost:5000/api/user/change-password',
+        `${apiUrl}/user/change-password`,
         {
           currentPassword: passwordForm.currentPassword,
           newPassword: passwordForm.newPassword

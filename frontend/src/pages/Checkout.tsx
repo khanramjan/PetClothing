@@ -139,13 +139,14 @@ const Checkout: React.FC = () => {
   const handlePayment = async () => {
     setIsLoading(true);
     try {
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
       const shippingCost = calculateShippingCost();
       const taxAmount = calculateTax();
       const totalAmount = cartTotal + shippingCost + taxAmount;
 
       // Create SSLCommerz payment
       const response = await axios.post(
-        'http://localhost:5000/api/payments/initiate',
+        `${apiUrl}/payments/initiate`,
         {
           amount: totalAmount,
           currency: 'BDT',
