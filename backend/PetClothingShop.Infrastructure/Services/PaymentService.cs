@@ -44,13 +44,16 @@ public class PaymentService : IPaymentService
         _configuration = configuration;
         _logger = logger;
 
-        // Initialize Stripe API Key
+        // Initialize Stripe API Key (optional - only if using Stripe)
         var stripeKey = _configuration["Stripe:SecretKey"];
-        if (string.IsNullOrEmpty(stripeKey))
+        if (!string.IsNullOrEmpty(stripeKey))
         {
-            throw new InvalidOperationException("Stripe SecretKey not configured in appsettings.json");
+            StripeConfiguration.ApiKey = stripeKey;
         }
-        StripeConfiguration.ApiKey = stripeKey;
+        else
+        {
+            _logger.LogWarning("Stripe SecretKey not configured - Stripe payments will be disabled. Using SSLCommerz instead.");
+        }
     }
 
     /// <summary>
