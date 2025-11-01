@@ -2,6 +2,17 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { User, AuthResponse } from '@/types';
 import api from '@/lib/api';
+import { supabase } from '@/lib/supabaseClient';
+import { signOut as supabaseSignOut } from '@/lib/supabaseAuth';
+
+interface SupabaseUser {
+  email?: string;
+  user_metadata?: {
+    first_name?: string;
+    last_name?: string;
+    full_name?: string;
+  };
+}
 
 interface AuthState {
   user: User | null;
@@ -12,6 +23,8 @@ interface AuthState {
   register: (data: { email: string; password: string; firstName: string; lastName: string; phoneNumber?: string }) => Promise<void>;
   logout: () => void;
   setAuth: (data: AuthResponse) => void;
+  setSupabaseAuth: (accessToken: string, user: SupabaseUser) => void;
+  initializeSupabaseAuth: () => Promise<void>;
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -76,7 +89,10 @@ export const useAuthStore = create<AuthState>()(
         });
       },
 
-      logout: () => {
+      logout: async () => {
+        // Sign out from Supabase
+        await supabaseSignOut();
+        
         localStorage.removeItem('accessToken');
         localStorage.removeItem('refreshToken');
         localStorage.removeItem('token');
@@ -104,6 +120,51 @@ export const useAuthStore = create<AuthState>()(
           refreshToken: data.refreshToken,
           isAuthenticated: true,
         });
+      },
+
+      setSupabaseAuth: (accessToken: string, supabaseUser: SupabaseUser) => {
+        localStorage.setItem('accessToken', accessToken);
+        localStorage.setItem('token', accessToken);
+        
+        // Extract user data from Supabase user object
+        const names = supabaseUser.user_metadata?.full_name?.split(' ') || ['', ''];
+        set({
+          user: {
+            userId: 0, // Will be synced with backend
+            email: supabaseUser.email || '',
+            firstName: supabaseUser.user_metadata?.first_name || names[0] || '',
+            lastName: supabaseUser.user_metadata?.last_name || names[1] || '',
+            role: 'Customer', // Default role, will be synced with backend
+          },
+          accessToken,
+          refreshToken: null,
+          isAuthenticated: true,
+        });
+      },
+
+      initializeSupabaseAuth: async () => {
+        // Check for existing Supabase session
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        if (session) {
+          const accessToken = session.access_token;
+          localStorage.setItem('accessToken', accessToken);
+          localStorage.setItem('token', accessToken);
+          
+          const names = session.user.user_metadata?.full_name?.split(' ') || ['', ''];
+          set({
+            user: {
+              userId: 0,
+              email: session.user.email || '',
+              firstName: session.user.user_metadata?.first_name || names[0] || '',
+              lastName: session.user.user_metadata?.last_name || names[1] || '',
+              role: 'Customer',
+            },
+            accessToken,
+            refreshToken: null,
+            isAuthenticated: true,
+          });
+        }
       },
     }),
     {

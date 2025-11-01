@@ -70,9 +70,13 @@ builder.Services.AddSwaggerGen(c =>
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// JWT Configuration
+// JWT Configuration - Support both internal JWT and Supabase JWT
 var jwtSecret = builder.Configuration["Jwt:Secret"] ?? throw new InvalidOperationException("JWT Secret not configured");
 var key = Encoding.ASCII.GetBytes(jwtSecret);
+
+// Get Supabase JWT secret if configured
+var supabaseJwtSecret = builder.Configuration["Supabase:JwtSecret"];
+var supabaseIssuer = builder.Configuration["Supabase:Issuer"];
 
 builder.Services.AddAuthentication(options =>
 {
@@ -94,6 +98,46 @@ builder.Services.AddAuthentication(options =>
         ValidateLifetime = true,
         ClockSkew = TimeSpan.Zero
     };
+    
+    // Add support for Supabase JWT tokens
+    if (!string.IsNullOrEmpty(supabaseJwtSecret) && !string.IsNullOrEmpty(supabaseIssuer))
+    {
+        options.Events = new JwtBearerEvents
+        {
+            OnTokenValidated = async context =>
+            {
+                // Check if this is a Supabase token by examining the issuer
+                var token = context.SecurityToken as System.IdentityModel.Tokens.Jwt.JwtSecurityToken;
+                if (token?.Issuer?.Contains("supabase") == true)
+                {
+                    // Token is from Supabase, validate it differently
+                    var supabaseKey = Encoding.ASCII.GetBytes(supabaseJwtSecret);
+                    var validationParameters = new TokenValidationParameters
+                    {
+                        ValidateIssuerSigningKey = true,
+                        IssuerSigningKey = new SymmetricSecurityKey(supabaseKey),
+                        ValidateIssuer = true,
+                        ValidIssuer = supabaseIssuer,
+                        ValidateAudience = false, // Supabase tokens don't use audience
+                        ValidateLifetime = true,
+                        ClockSkew = TimeSpan.Zero
+                    };
+                    
+                    // Re-validate the token with Supabase parameters
+                    var tokenHandler = new System.IdentityModel.Tokens.Jwt.JwtSecurityTokenHandler();
+                    try
+                    {
+                        tokenHandler.ValidateToken(context.Request.Headers["Authorization"].ToString().Replace("Bearer ", ""), validationParameters, out _);
+                    }
+                    catch
+                    {
+                        context.Fail("Invalid Supabase token");
+                    }
+                }
+                await Task.CompletedTask;
+            }
+        };
+    }
 });
 
 builder.Services.AddAuthorization();

@@ -19,10 +19,13 @@ import AdminCustomers from './pages/admin/Customers';
 import AdminCategories from './pages/admin/Categories';
 import AdminReviews from './pages/admin/Reviews';
 import ProtectedRoute from './components/ProtectedRoute';
+import { SupabaseAuthListener } from './components/SupabaseAuthListener';
 
 function App() {
   return (
-    <Routes>
+    <>
+      <SupabaseAuthListener />
+      <Routes>
       {/* Public Routes */}
       <Route path="/" element={<Layout />}>
         <Route index element={<Home />} />
@@ -55,6 +58,7 @@ function App() {
         </Route>
       </Route>
     </Routes>
+    </>
   );
 }
 
